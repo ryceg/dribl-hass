@@ -1,0 +1,14 @@
+{
+  "domain": "dribl",
+  "name": "Dribl Football",
+  "codeowners": ["@ryceg"],
+  "config_flow": true,
+  "documentation": "https://github.com/ryceg/dribl-hass",
+  "integration_type": "hub",
+  "issue_tracker": "https://github.com/ryceg/dribl-hass/issues",
+  "requirements": ["aiohttp>=3.8.0"],
+  "ssdp": [],
+  "version": "1.0.0",
+  "zeroconf": [],
+  "iot_class": "cloud_polling"
+}
