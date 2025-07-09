@@ -51,15 +51,22 @@ class DriblAPI:
             "timezone": self.timezone,
         })
 
+        headers = {
+            "User-Agent": "Home Assistant Dribl Integration",
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+
         try:
             async with async_timeout.timeout(timeout):
-                async with self.session.request(method, url, params=params) as response:
+                async with self.session.request(method, url, params=params, headers=headers) as response:
                     response.raise_for_status()
                     return await response.json()
         except asyncio.TimeoutError as err:
             raise DriblAPIError(f"Request timeout: {url}") from err
         except aiohttp.ClientError as err:
             raise DriblAPIError(f"Request failed: {url} - {err}") from err
+
 
     async def get_clubs(self) -> List[Dict[str, Any]]:
         """Get all clubs."""
