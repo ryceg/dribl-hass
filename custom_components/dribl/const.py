@@ -10,6 +10,7 @@ MANUFACTURER: Final = "Dribl"
 API_BASE_URL: Final = "https://mc-api.dribl.com/api"
 DEFAULT_TENANT: Final = "7MNGJ1QmAz"
 DEFAULT_TIMEZONE: Final = "Australia/Hobart"
+DEFAULT_SUBDOMAIN: Final = "https://footballtasmania.dribl.com"
 
 # Update intervals
 DEFAULT_UPDATE_INTERVAL: Final = timedelta(minutes=30)
@@ -27,6 +28,7 @@ CONF_GROUNDS: Final = "grounds"
 CONF_PLAYERS: Final = "players"
 CONF_RESULTS_HOURS: Final = "results_hours"
 CONF_UPDATE_INTERVAL: Final = "update_interval"
+CONF_SUBDOMAIN: Final = "subdomain"
 
 # Defaults
 DEFAULT_RESULTS_HOURS: Final = 72

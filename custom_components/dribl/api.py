@@ -311,6 +311,36 @@ class DriblAPI:
             _LOGGER.error("Failed to get match members %s/%s: %s", match_id, team_id, err)
             return []
 
+    async def get_ladders(
+        self,
+        season: Optional[str] = None,
+        competition: Optional[str] = None,
+        league: Optional[str] = None,
+        date_range: str = "default",
+        ladder_type: str = "regular",
+        require_pools: bool = True,
+    ) -> List[Dict[str, Any]]:
+        """Get ladder standings with optional filters."""
+        params = {
+            "date_range": date_range,
+            "ladder_type": ladder_type,
+            "require_pools": str(require_pools).lower(),
+        }
+        
+        if season:
+            params["season"] = season
+        if competition:
+            params["competition"] = competition
+        if league:
+            params["league"] = league
+        
+        try:
+            data = await self._request("GET", "/ladders", params)
+            return data.get("data", []) if isinstance(data, dict) else []
+        except DriblAPIError as err:
+            _LOGGER.error("Failed to get ladders: %s", err)
+            return []
+
     async def test_connection(self) -> bool:
         """Test if the API connection is working."""
         try:

@@ -13,8 +13,13 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .api import DriblAPI, DriblAPIError
 from .const import (
     CONF_CLUBS,
+    CONF_COMPETITIONS,
+    CONF_GROUNDS,
+    CONF_LEAGUES,
     CONF_PLAYERS,
     CONF_RESULTS_HOURS,
+    CONF_ROUNDS,
+    CONF_SEASON,
     CONF_TENANT_ID,
     CONF_TIMEZONE,
     CONF_UPDATE_INTERVAL,
@@ -37,7 +42,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Get configuration
     tenant_id = entry.data.get(CONF_TENANT_ID, DEFAULT_TENANT)
     timezone = entry.data.get(CONF_TIMEZONE, DEFAULT_TIMEZONE)
+    season = entry.data.get(CONF_SEASON)
+    competitions = entry.data.get(CONF_COMPETITIONS, [])
+    leagues = entry.data.get(CONF_LEAGUES, [])
     clubs = entry.data.get(CONF_CLUBS, [])
+    rounds = entry.data.get(CONF_ROUNDS, [])
+    grounds = entry.data.get(CONF_GROUNDS, [])
     players = entry.data.get(CONF_PLAYERS, [])
     results_hours = entry.options.get(CONF_RESULTS_HOURS, DEFAULT_RESULTS_HOURS)
     update_interval = entry.options.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL_MINUTES)
@@ -56,7 +66,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     coordinator = DriblDataUpdateCoordinator(
         hass,
         api,
+        season,
+        competitions,
+        leagues,
         clubs,
+        rounds,
+        grounds,
         players,
         results_hours,
         timedelta(minutes=update_interval),
@@ -96,14 +111,24 @@ class DriblDataUpdateCoordinator(DataUpdateCoordinator):
         self,
         hass: HomeAssistant,
         api: DriblAPI,
+        season: str,
+        competitions: list,
+        leagues: list,
         clubs: list,
+        rounds: list,
+        grounds: list,
         players: list,
         results_hours: int,
         update_interval: timedelta,
     ) -> None:
         """Initialize."""
         self.api = api
+        self.season = season
+        self.competitions = competitions
+        self.leagues = leagues
         self.clubs = clubs
+        self.rounds = rounds
+        self.grounds = grounds
         self.players = players
         self.results_hours = results_hours
         
@@ -119,28 +144,65 @@ class DriblDataUpdateCoordinator(DataUpdateCoordinator):
         try:
             data = {}
             
-            # Get next fixtures for followed clubs
+            # Get fixtures using all configured filters
             next_fixtures = []
-            for club_id in self.clubs:
-                fixture = await self.api.get_next_fixture(club=club_id)
-                if fixture:
-                    next_fixtures.append(fixture)
+            recent_results = []
             
-            # Sort by date to get the absolute next game
+            # If specific clubs are configured, get fixtures per club
+            if self.clubs:
+                for club_id in self.clubs:
+                    # Get next fixture for this club
+                    fixture = await self.api.get_next_fixture(club=club_id)
+                    if fixture:
+                        next_fixtures.append(fixture)
+                    
+                    # Get recent results for this club
+                    results = await self.api.get_recent_results(
+                        hours=self.results_hours,
+                        club=club_id
+                    )
+                    recent_results.extend(results)
+            else:
+                # If no clubs specified, get fixtures using other filters
+                # Use competitions/leagues/rounds/grounds to filter
+                for comp_id in (self.competitions if self.competitions else [None]):
+                    for league_id in (self.leagues if self.leagues else [None]):
+                        # Get fixtures with current filters
+                        fixtures = await self.api.get_fixtures(
+                            date_range="default",
+                            season=self.season,
+                            competition=comp_id,
+                            league=league_id,
+                            status="pending"
+                        )
+                        next_fixtures.extend(fixtures)
+                        
+                        # Get recent results
+                        results = await self.api.get_fixtures(
+                            date_range="default",
+                            season=self.season,
+                            competition=comp_id,
+                            league=league_id,
+                            status="complete"
+                        )
+                        recent_results.extend(results)
+            
+            # Filter by rounds if specified
+            if self.rounds:
+                next_fixtures = [f for f in next_fixtures if f.get("attributes", {}).get("round") in self.rounds]
+                recent_results = [f for f in recent_results if f.get("attributes", {}).get("round") in self.rounds]
+            
+            # Filter by grounds if specified
+            if self.grounds:
+                next_fixtures = [f for f in next_fixtures if f.get("attributes", {}).get("ground_name") in self.grounds]
+                recent_results = [f for f in recent_results if f.get("attributes", {}).get("ground_name") in self.grounds]
+            
+            # Sort and select next game
             if next_fixtures:
                 next_fixtures.sort(key=lambda x: x.get("attributes", {}).get("date", ""))
                 data["next_game"] = next_fixtures[0]
             else:
                 data["next_game"] = None
-            
-            # Get recent results for followed clubs
-            recent_results = []
-            for club_id in self.clubs:
-                results = await self.api.get_recent_results(
-                    hours=self.results_hours,
-                    club=club_id
-                )
-                recent_results.extend(results)
             
             # Sort by date descending (most recent first)
             recent_results.sort(key=lambda x: x.get("attributes", {}).get("date", ""), reverse=True)
@@ -158,11 +220,30 @@ class DriblDataUpdateCoordinator(DataUpdateCoordinator):
             
             # Get player data
             player_data = {}
+            player_careers = {}
             for player_id in self.players:
-                profile = await self.api.get_member_profile(player_id)
+                profile = await self.api.get_member_profile(player_id, self.season)
                 if profile:
                     player_data[player_id] = profile
+                
+                # Get career stats
+                careers = await self.api.get_member_careers(player_id, self.season)
+                if careers:
+                    player_careers[player_id] = careers
+            
             data["players"] = player_data
+            data["player_careers"] = player_careers
+            
+            # Get ladder data
+            ladder_data = {}
+            for league_id in self.leagues:
+                ladder = await self.api.get_ladders(
+                    season=self.season,
+                    league=league_id
+                )
+                if ladder:
+                    ladder_data[league_id] = ladder
+            data["ladders"] = ladder_data
             
             return data
             

@@ -20,10 +20,12 @@ from .const import (
     CONF_RESULTS_HOURS,
     CONF_ROUNDS,
     CONF_SEASON,
+    CONF_SUBDOMAIN,
     CONF_TENANT_ID,
     CONF_TIMEZONE,
     CONF_UPDATE_INTERVAL,
     DEFAULT_RESULTS_HOURS,
+    DEFAULT_SUBDOMAIN,
     DEFAULT_TENANT,
     DEFAULT_TIMEZONE,
     DEFAULT_UPDATE_INTERVAL_MINUTES,
@@ -37,6 +39,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_TENANT_ID, default=DEFAULT_TENANT): cv.string,
         vol.Required(CONF_TIMEZONE, default=DEFAULT_TIMEZONE): cv.string,
+        vol.Required(CONF_SUBDOMAIN, default=DEFAULT_SUBDOMAIN): cv.string,
         vol.Optional(CONF_RESULTS_HOURS, default=DEFAULT_RESULTS_HOURS): vol.All(
             vol.Coerce(int), vol.Clamp(min=1, max=168)
         ),
@@ -165,6 +168,9 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({
                 vol.Optional(CONF_COMPETITIONS, default=[]): cv.multi_select(competition_options if competition_options else {"no_competitions": "No competitions available"}),
             }),
+            description_placeholders={
+                "description": "Choose which competitions to follow (leave blank to track all competitions)"
+            },
         )
 
     async def async_step_leagues(
@@ -201,6 +207,9 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({
                 vol.Optional(CONF_LEAGUES, default=[]): cv.multi_select(league_options if league_options else {"no_leagues": "No leagues available"}),
             }),
+            description_placeholders={
+                "description": "Choose which leagues to follow (leave blank to track all leagues)"
+            },
         )
 
     async def async_step_clubs(
@@ -231,8 +240,11 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             club_image = club_attrs.get("image")
             _LOGGER.debug("Processing club: id=%s, name=%s, image=%s", club_id, club_name, club_image)
             if club_id:
-                # Add logo emoji or indicator if image exists
-                display_name = f"🏆 {club_name}" if club_image else club_name
+                # Add logo indicator and make image URL accessible
+                if club_image:
+                    display_name = f"🏆 {club_name} (logo available)"
+                else:
+                    display_name = club_name
                 club_options[club_id] = display_name
         _LOGGER.debug("Club options: %s", club_options)
         
@@ -241,6 +253,9 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({
                 vol.Optional(CONF_CLUBS, default=[]): cv.multi_select(club_options if club_options else {"no_clubs": "No clubs available"}),
             }),
+            description_placeholders={
+                "description": "Choose which clubs to follow (leave blank to track all clubs)"
+            },
         )
 
     async def async_step_rounds(
@@ -277,6 +292,9 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({
                 vol.Optional(CONF_ROUNDS, default=[]): cv.multi_select(round_options if round_options else {"no_rounds": "No rounds available"}),
             }),
+            description_placeholders={
+                "description": "Choose which rounds to follow (leave blank to track all rounds)"
+            },
         )
 
     async def async_step_grounds(
@@ -313,6 +331,9 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({
                 vol.Optional(CONF_GROUNDS, default=[]): cv.multi_select(ground_options if ground_options else {"no_grounds": "No grounds available"}),
             }),
+            description_placeholders={
+                "description": "Choose which grounds to follow (leave blank to track all grounds)"
+            },
         )
 
     async def async_step_players(
@@ -341,6 +362,9 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({
                 vol.Optional("player_ids", default=""): cv.string,
             }),
+            description_placeholders={
+                "description": "Choose which players to follow (leave blank to skip player tracking)"
+            },
         )
 
     @staticmethod
