@@ -80,6 +80,34 @@ class DriblAPI:
             _LOGGER.error("Failed to get clubs: %s", err)
             return []
 
+    async def get_seasons(self) -> List[Dict[str, Any]]:
+        """Get all seasons."""
+        try:
+            data = await self._request("GET", "/list/seasons", {"disable_paging": "true"})
+            _LOGGER.debug("Raw seasons API response: %s", data)
+            result = data if isinstance(data, list) else data.get("data", [])
+            _LOGGER.debug("Processed seasons result: %s", result)
+            return result
+        except DriblAPIError as err:
+            _LOGGER.error("Failed to get seasons: %s", err)
+            return []
+
+    async def get_competitions(self, season_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Get all competitions, optionally filtered by season."""
+        params = {"disable_paging": "true"}
+        if season_id:
+            params["season"] = season_id
+        
+        try:
+            data = await self._request("GET", "/list/competitions", params)
+            _LOGGER.debug("Raw competitions API response: %s", data)
+            result = data if isinstance(data, list) else data.get("data", [])
+            _LOGGER.debug("Processed competitions result: %s", result)
+            return result
+        except DriblAPIError as err:
+            _LOGGER.error("Failed to get competitions: %s", err)
+            return []
+
     async def get_leagues(self, competition_id: Optional[str] = None) -> List[Dict[str, Any]]:
         """Get leagues for a competition."""
         params = {"disable_paging": "true", "sort": "+name"}
@@ -91,6 +119,50 @@ class DriblAPI:
             return data.get("data", []) if isinstance(data, dict) else data
         except DriblAPIError as err:
             _LOGGER.error("Failed to get leagues: %s", err)
+            return []
+
+    async def get_rounds(
+        self, 
+        season_id: Optional[str] = None, 
+        competition_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Get rounds, optionally filtered by season and competition."""
+        params = {"disable_paging": "true"}
+        if season_id:
+            params["season"] = season_id
+        if competition_id:
+            params["competition"] = competition_id
+        
+        try:
+            data = await self._request("GET", "/list/rounds", params)
+            _LOGGER.debug("Raw rounds API response: %s", data)
+            result = data if isinstance(data, list) else data.get("data", [])
+            _LOGGER.debug("Processed rounds result: %s", result)
+            return result
+        except DriblAPIError as err:
+            _LOGGER.error("Failed to get rounds: %s", err)
+            return []
+
+    async def get_grounds(
+        self, 
+        season_id: Optional[str] = None, 
+        competition_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Get grounds, optionally filtered by season and competition."""
+        params = {"disable_paging": "true"}
+        if season_id:
+            params["season"] = season_id
+        if competition_id:
+            params["competition"] = competition_id
+        
+        try:
+            data = await self._request("GET", "/list/grounds", params)
+            _LOGGER.debug("Raw grounds API response: %s", data)
+            result = data if isinstance(data, list) else data.get("data", [])
+            _LOGGER.debug("Processed grounds result: %s", result)
+            return result
+        except DriblAPIError as err:
+            _LOGGER.error("Failed to get grounds: %s", err)
             return []
 
     async def get_fixtures(

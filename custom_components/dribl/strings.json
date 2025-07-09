@@ -11,16 +11,51 @@
           "update_interval": "Update interval in minutes (5-1440)"
         }
       },
+      "season": {
+        "title": "Select Season",
+        "description": "Choose which season to follow",
+        "data": {
+          "season": "Select season to track"
+        }
+      },
+      "competitions": {
+        "title": "Select Competitions",
+        "description": "Choose which competitions to follow (leave blank to track all competitions)",
+        "data": {
+          "competitions": "Select competitions to track"
+        }
+      },
+      "leagues": {
+        "title": "Select Leagues",
+        "description": "Choose which leagues to follow (leave blank to track all leagues)",
+        "data": {
+          "leagues": "Select leagues to track"
+        }
+      },
       "clubs": {
         "title": "Select Clubs",
-        "description": "Choose which clubs to follow",
+        "description": "Choose which clubs to follow (leave blank to track all clubs)",
         "data": {
           "clubs": "Select clubs to track fixtures and results"
         }
       },
+      "rounds": {
+        "title": "Select Rounds",
+        "description": "Choose which rounds to follow (leave blank to track all rounds)",
+        "data": {
+          "rounds": "Select rounds to track"
+        }
+      },
+      "grounds": {
+        "title": "Select Grounds",
+        "description": "Choose which grounds to follow (leave blank to track all grounds)",
+        "data": {
+          "grounds": "Select grounds to track"
+        }
+      },
       "players": {
         "title": "Select Players",
-        "description": "Choose which players to follow",
+        "description": "Choose which players to follow (leave blank to skip player tracking)",
         "data": {
           "player_ids": "Player IDs to track (comma-separated)"
         }
