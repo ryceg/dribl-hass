@@ -1,0 +1,16 @@
+# Markdown Card for Ladder Display
+# This shows a simple ladder table using markdown
+
+type: markdown
+title: League Ladder
+content: |
+  {% set ladder = state_attr('sensor.dribl_2025_ladder', 'ladder') %}
+  {% if ladder %}
+  | Pos | Team | P | W | D | L | Pts |
+  |-----|------|---|---|---|---|-----|
+  {%- for team in ladder[:8] %}
+  | {{ team.position }} | {{ team.club_name[:20] }} | {{ team.played }} | {{ team.won }} | {{ team.drawn }} | {{ team.lost }} | **{{ team.points }}** |
+  {%- endfor %}
+  {% else %}
+  No ladder data available. Check your Dribl integration configuration.
+  {% endif %}

@@ -1,0 +1,61 @@
+# Player Grid Card
+# Shows multiple players in a grid layout
+
+type: grid
+title: Team Players
+columns: 3
+square: false
+cards:
+  - type: tile
+    entity: sensor.dribl_john_doe
+    name: John Doe
+    icon: mdi:account-circle
+    color: teal
+    secondary_info: |
+      {% if state_attr('sensor.dribl_john_doe', 'age') %}
+      Age: {{ state_attr('sensor.dribl_john_doe', 'age') }}
+      {% endif %}
+      {% if state_attr('sensor.dribl_john_doe', 'is_captain') %}
+      Captain
+      {% endif %}
+    tap_action:
+      action: more-info
+
+  - type: tile
+    entity: sensor.dribl_jane_smith
+    name: Jane Smith
+    icon: mdi:account-circle
+    color: pink
+    secondary_info: |
+      {% if state_attr('sensor.dribl_jane_smith', 'age') %}
+      Age: {{ state_attr('sensor.dribl_jane_smith', 'age') }}
+      {% endif %}
+      {% if state_attr('sensor.dribl_jane_smith', 'is_goalkeeper') %}
+      Goalkeeper
+      {% endif %}
+    tap_action:
+      action: more-info
+
+  - type: tile
+    entity: sensor.dribl_mike_wilson
+    name: Mike Wilson
+    icon: mdi:account-circle
+    color: blue
+    secondary_info: |
+      {% if state_attr('sensor.dribl_mike_wilson', 'age') %}
+      Age: {{ state_attr('sensor.dribl_mike_wilson', 'age') }}
+      {% endif %}
+    tap_action:
+      action: more-info
+
+  - type: tile
+    entity: sensor.dribl_sarah_jones
+    name: Sarah Jones
+    icon: mdi:account-circle
+    color: green
+    secondary_info: |
+      {% if state_attr('sensor.dribl_sarah_jones', 'age') %}
+      Age: {{ state_attr('sensor.dribl_sarah_jones', 'age') }}
+      {% endif %}
+    tap_action:
+      action: more-info

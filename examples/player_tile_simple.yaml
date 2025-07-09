@@ -1,0 +1,27 @@
+# Simple Player Tile
+# Shows basic player information with photo
+
+type: tile
+entity: sensor.dribl_john_doe
+name: John Doe
+icon: mdi:account-circle
+color: teal
+layout_options:
+  grid_columns: 2
+  grid_rows: 2
+state_content:
+  - state
+  - last-changed
+secondary_info: |
+  {% set attrs = state_attr('sensor.dribl_john_doe', 'age') %}
+  {% if attrs %}
+  Age: {{ attrs }}
+  {% endif %}
+  {% if state_attr('sensor.dribl_john_doe', 'is_captain') %}
+  • Captain
+  {% endif %}
+  {% if state_attr('sensor.dribl_john_doe', 'is_goalkeeper') %}
+  • Goalkeeper
+  {% endif %}
+tap_action:
+  action: more-info

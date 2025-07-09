@@ -1,0 +1,43 @@
+# Player Entities Card
+# Shows player information in a simple entities format
+
+type: entities
+title: Player Information
+entities:
+  - entity: sensor.dribl_john_doe
+    name: Full Name
+    icon: mdi:account-circle
+  - entity: sensor.dribl_john_doe
+    type: attribute
+    attribute: age
+    name: Age
+    icon: mdi:calendar-today
+  - entity: sensor.dribl_john_doe
+    type: attribute
+    attribute: nationality
+    name: Nationality
+    icon: mdi:flag
+  - entity: sensor.dribl_john_doe
+    type: attribute
+    attribute: is_captain
+    name: Team Captain
+    icon: mdi:star
+  - entity: sensor.dribl_john_doe
+    type: attribute
+    attribute: is_goalkeeper
+    name: Goalkeeper
+    icon: mdi:soccer-field
+  - type: section
+    label: Club Information
+  - entity: sensor.dribl_john_doe
+    type: custom:template-entity-row
+    name: Current Club
+    state: |
+      {% set clubs = state_attr('sensor.dribl_john_doe', 'clubs') %}
+      {% if clubs and clubs|length > 0 %}
+      {{ clubs[0].name }}
+      {% else %}
+      N/A
+      {% endif %}
+    icon: mdi:shield-star
+show_header_toggle: false

@@ -1,0 +1,15 @@
+# Basic Entities Card for Ladder (No Custom Components Required)
+# This shows ladder information using only standard Home Assistant entities
+
+type: entities
+title: League Ladder
+entities:
+  - entity: sensor.dribl_2025_ladder
+    name: Teams in League
+    icon: mdi:format-list-numbered
+  - entity: sensor.dribl_2025_ladder
+    type: attribute
+    attribute: team_count
+    name: Total Teams
+    icon: mdi:counter
+show_header_toggle: false

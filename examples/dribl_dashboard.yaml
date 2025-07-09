@@ -1,0 +1,185 @@
+# Dribl Football Dashboard Example
+# This dashboard shows various Dribl sensors in a comprehensive layout
+
+title: Dribl Football Dashboard
+views:
+  - title: Home
+    path: home
+    icon: mdi:soccer
+    cards:
+      # Next Game Card
+      - type: tile
+        entity: sensor.dribl_next_game
+        name: Next Game
+        icon: mdi:soccer
+        color: green
+        layout_options:
+          grid_columns: 4
+          grid_rows: 2
+        features:
+          - type: tile-template
+            content: |
+              <div style="padding: 10px;">
+                <h3>{{ states('sensor.dribl_next_game') }}</h3>
+                {% set attrs = state_attr('sensor.dribl_next_game', 'home_team') %}
+                {% if attrs %}
+                <div style="display: flex; align-items: center; justify-content: space-between; margin: 10px 0;">
+                  <div style="text-align: center;">
+                    {% if state_attr('sensor.dribl_next_game', 'home_logo') %}
+                    <img src="{{ state_attr('sensor.dribl_next_game', 'home_logo') }}" style="width: 40px; height: 40px; border-radius: 50%;" />
+                    {% endif %}
+                    <div>{{ state_attr('sensor.dribl_next_game', 'home_team') }}</div>
+                  </div>
+                  <div style="font-size: 24px; font-weight: bold;">VS</div>
+                  <div style="text-align: center;">
+                    {% if state_attr('sensor.dribl_next_game', 'away_logo') %}
+                    <img src="{{ state_attr('sensor.dribl_next_game', 'away_logo') }}" style="width: 40px; height: 40px; border-radius: 50%;" />
+                    {% endif %}
+                    <div>{{ state_attr('sensor.dribl_next_game', 'away_team') }}</div>
+                  </div>
+                </div>
+                <div style="text-align: center; margin-top: 10px;">
+                  <strong>{{ state_attr('sensor.dribl_next_game', 'ground_name') }}</strong><br>
+                  <small>{{ state_attr('sensor.dribl_next_game', 'competition') }} - {{ state_attr('sensor.dribl_next_game', 'league') }}</small>
+                </div>
+                {% endif %}
+              </div>
+        tap_action:
+          action: more-info
+
+      # Recent Results Card
+      - type: tile
+        entity: sensor.dribl_recent_results
+        name: Recent Results
+        icon: mdi:soccer-field
+        color: blue
+        layout_options:
+          grid_columns: 4
+          grid_rows: 3
+        features:
+          - type: tile-template
+            content: |
+              <div style="padding: 10px; max-height: 300px; overflow-y: auto;">
+                <h3>{{ states('sensor.dribl_recent_results') }} Recent Games</h3>
+                {% for result in state_attr('sensor.dribl_recent_results', 'results')[:5] %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
+                  <div style="display: flex; align-items: center;">
+                    {% if result.home_logo %}
+                    <img src="{{ result.home_logo }}" style="width: 20px; height: 20px; margin-right: 5px; border-radius: 50%;" />
+                    {% endif %}
+                    <span>{{ result.home_team }}</span>
+                  </div>
+                  <div style="font-weight: bold;">{{ result.home_score }} - {{ result.away_score }}</div>
+                  <div style="display: flex; align-items: center;">
+                    <span>{{ result.away_team }}</span>
+                    {% if result.away_logo %}
+                    <img src="{{ result.away_logo }}" style="width: 20px; height: 20px; margin-left: 5px; border-radius: 50%;" />
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+        tap_action:
+          action: more-info
+
+      # League Ladder Card
+      - type: tile
+        entity: sensor.dribl_2025_ladder
+        name: League Ladder
+        icon: mdi:format-list-numbered
+        color: purple
+        layout_options:
+          grid_columns: 4
+          grid_rows: 4
+        features:
+          - type: tile-template
+            content: |
+              <div style="padding: 10px; max-height: 350px; overflow-y: auto;">
+                <h3>League Standings</h3>
+                <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+                  <thead>
+                    <tr style="background-color: #673ab7; color: white;">
+                      <th style="padding: 3px; text-align: center;">Pos</th>
+                      <th style="padding: 3px; text-align: left;">Team</th>
+                      <th style="padding: 3px; text-align: center;">P</th>
+                      <th style="padding: 3px; text-align: center;">Pts</th>
+                      <th style="padding: 3px; text-align: center;">GD</th>
+                      <th style="padding: 3px; text-align: center;">Form</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for team in state_attr('sensor.dribl_2025_ladder', 'ladder')[:8] %}
+                    <tr style="{% if loop.index <= 3 %}background-color: #e8f5e8;{% elif loop.index >= 6 %}background-color: #ffeee8;{% endif %}">
+                      <td style="padding: 3px; text-align: center; font-weight: bold;">{{ team.position }}</td>
+                      <td style="padding: 3px;">
+                        <div style="display: flex; align-items: center;">
+                          {% if team.club_logo %}
+                          <img src="{{ team.club_logo }}" style="width: 16px; height: 16px; margin-right: 3px; border-radius: 50%;" />
+                          {% endif %}
+                          <span>{{ team.club_name[:15] }}{% if team.club_name|length > 15 %}...{% endif %}</span>
+                        </div>
+                      </td>
+                      <td style="padding: 3px; text-align: center;">{{ team.played }}</td>
+                      <td style="padding: 3px; text-align: center; font-weight: bold;">{{ team.points }}</td>
+                      <td style="padding: 3px; text-align: center;">{{ team.goal_difference }}</td>
+                      <td style="padding: 3px; text-align: center;">
+                        {% for match in team.recent_form[-3:] %}
+                        <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; color: white; font-size: 8px; margin-right: 1px;
+                        {% if match.result == 'W' %}background-color: #4caf50;{% elif match.result == 'L' %}background-color: #f44336;{% elif match.result == 'D' %}background-color: #ff9800;{% else %}background-color: #9e9e9e;{% endif %}">
+                        {{ match.result }}
+                        </span>
+                        {% endfor %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+        tap_action:
+          action: more-info
+
+  - title: Clubs
+    path: clubs
+    icon: mdi:shield-star
+    cards:
+      # Club Cards (example for first few clubs)
+      - type: grid
+        cards:
+          - type: tile
+            entity: sensor.dribl_university_of_tasmania_football_club
+            name: University of Tasmania FC
+            icon: mdi:shield-star
+            color: orange
+            tap_action:
+              action: more-info
+          
+          - type: tile
+            entity: sensor.dribl_kingborough_lions_united_football_club
+            name: Kingborough Lions United FC
+            icon: mdi:shield-star
+            color: red
+            tap_action:
+              action: more-info
+
+  - title: Players
+    path: players
+    icon: mdi:account-circle
+    cards:
+      # Player Cards (example)
+      - type: grid
+        cards:
+          - type: tile
+            entity: sensor.dribl_john_doe
+            name: John Doe
+            icon: mdi:account-circle
+            color: teal
+            tap_action:
+              action: more-info
+          
+          - type: tile
+            entity: sensor.dribl_jane_smith
+            name: Jane Smith
+            icon: mdi:account-circle
+            color: pink
+            tap_action:
+              action: more-info

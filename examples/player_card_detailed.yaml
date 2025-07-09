@@ -1,0 +1,98 @@
+# Detailed Player Card
+# Shows comprehensive player information including career stats
+
+type: markdown
+title: Player Profile
+content: |
+  {% set player = states('sensor.dribl_john_doe') %}
+  {% set attrs = state_attr('sensor.dribl_john_doe', 'first_name') %}
+  {% set career_stats = state_attr('sensor.dribl_john_doe', 'career_stats') %}
+  
+  {% if attrs %}
+  <div style="display: flex; align-items: center; margin-bottom: 15px;">
+    {% if state_attr('sensor.dribl_john_doe', 'image') %}
+    <img src="{{ state_attr('sensor.dribl_john_doe', 'image') }}" 
+         style="width: 80px; height: 80px; border-radius: 50%; margin-right: 15px; border: 3px solid #2196f3;" 
+         onerror="this.style.display='none'" />
+    {% endif %}
+    <div>
+      <h2 style="margin: 0; color: #2196f3;">{{ player }}</h2>
+      <div style="color: #666; margin-top: 5px;">
+        {% if state_attr('sensor.dribl_john_doe', 'age') %}
+        Age: {{ state_attr('sensor.dribl_john_doe', 'age') }}
+        {% endif %}
+        {% if state_attr('sensor.dribl_john_doe', 'nationality') %}
+        • {{ state_attr('sensor.dribl_john_doe', 'nationality') }}
+        {% endif %}
+      </div>
+      <div style="margin-top: 5px;">
+        {% if state_attr('sensor.dribl_john_doe', 'is_captain') %}
+        <span style="background: #ffd700; color: #333; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-right: 5px;">Captain</span>
+        {% endif %}
+        {% if state_attr('sensor.dribl_john_doe', 'is_goalkeeper') %}
+        <span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">Goalkeeper</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  ## Club Information
+  {% set clubs = state_attr('sensor.dribl_john_doe', 'clubs') %}
+  {% if clubs %}
+  <div style="background: #f5f5f5; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
+    {% for club in clubs %}
+    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+      <strong>{{ club.name }}</strong>
+      {% if club.team_name %}
+      <span style="margin-left: 10px; color: #666;">{{ club.team_name }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  ## Career Statistics
+  {% if career_stats %}
+  <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #2196f3; color: white;">
+          <th style="padding: 8px; text-align: left; border: 1px solid #ddd;">Season</th>
+          <th style="padding: 8px; text-align: center; border: 1px solid #ddd;">Games</th>
+          <th style="padding: 8px; text-align: center; border: 1px solid #ddd;">Goals</th>
+          <th style="padding: 8px; text-align: center; border: 1px solid #ddd;">Cards</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for stat in career_stats %}
+        <tr style="background: {% if loop.index % 2 == 0 %}#f9f9f9{% else %}white{% endif %};">
+          <td style="padding: 8px; border: 1px solid #ddd;">{{ stat.season_name if stat.season_name else 'Unknown' }}</td>
+          <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">{{ stat.games_played if stat.games_played else 0 }}</td>
+          <td style="padding: 8px; text-align: center; border: 1px solid #ddd; font-weight: bold;">{{ stat.goals if stat.goals else 0 }}</td>
+          <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">
+            {% if stat.yellow_cards %}🟨 {{ stat.yellow_cards }}{% endif %}
+            {% if stat.red_cards %}🟥 {{ stat.red_cards }}{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+    <strong>No career statistics available</strong><br>
+    <small>Statistics may not be available for this player or season.</small>
+  </div>
+  {% endif %}
+
+  <div style="font-size: 12px; color: #666; text-align: center; margin-top: 15px;">
+    Last updated: {{ state_attr('sensor.dribl_john_doe', 'last_updated') if state_attr('sensor.dribl_john_doe', 'last_updated') else 'Unknown' }}
+  </div>
+  
+  {% else %}
+  <div style="text-align: center; padding: 20px; color: #666;">
+    <div style="font-size: 48px; margin-bottom: 10px;">⚠️</div>
+    <div>No player data available</div>
+    <small>Check your Dribl integration configuration</small>
+  </div>
+  {% endif %}

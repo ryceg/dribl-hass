@@ -1,0 +1,11 @@
+# Simple Entity Card for Ladder
+# This shows the ladder as a basic entity card
+
+type: entity
+entity: sensor.dribl_2025_ladder
+name: League Ladder
+icon: mdi:format-list-numbered
+attribute: team_count
+unit: teams
+tap_action:
+  action: more-info

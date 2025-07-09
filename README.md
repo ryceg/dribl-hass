@@ -86,6 +86,19 @@ A comprehensive Home Assistant integration for Dribl football management platfor
   - `is_captain`: Whether player is a captain
   - `is_goalkeeper`: Whether player is a goalkeeper
   - `clubs`: List of associated clubs
+  - `career_stats`: Career statistics and match history
+
+### Ladder Sensors (`sensor.dribl_[league_name]_ladder`)
+- **State**: Number of teams in the ladder
+- **Attributes**:
+  - `ladder`: Complete ladder standings with all statistics
+  - `team_count`: Total number of teams
+  - Each team includes:
+    - Position, played, won, drawn, lost, byes, forfeits
+    - Goals for, goals against, goal difference
+    - Points and points per game
+    - Recent form (last 5 games with results and links)
+    - Up next (next fixture with link)
 
 ## Usage Examples
 
@@ -125,13 +138,30 @@ entities:
     name: Venue
 ```
 
+## Dashboard Examples
+
+This integration includes comprehensive dashboard examples in the `examples/` directory:
+
+- **`ladder_tile.yaml`** - Full-featured ladder table with team logos, statistics, and clickable form indicators
+- **`ladder_tile_simple.yaml`** - Simple ladder tile for quick setup
+- **`ladder_card_advanced.yaml`** - Advanced ladder card with interactive features and hover effects
+- **`dribl_dashboard.yaml`** - Complete multi-page dashboard with next game, results, and ladder views
+
+See the [examples README](examples/README.md) for detailed usage instructions and customization options.
+
 ## API Information
 
 This integration uses the Dribl API endpoints:
 - `/api/fixtures` - Fixture data
 - `/api/list/clubs` - Club information
 - `/api/list/leagues` - League information
+- `/api/list/seasons` - Season information
+- `/api/list/competitions` - Competition information
+- `/api/list/rounds` - Round information
+- `/api/list/grounds` - Ground information
 - `/api/memberprofile` - Player profiles
+- `/api/memberprofile-careers` - Player career statistics
+- `/api/ladders` - League ladder standings
 
 ## Support
 

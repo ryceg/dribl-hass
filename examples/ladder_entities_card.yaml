@@ -1,0 +1,27 @@
+# Entities Card for Ladder Information
+# This shows ladder details in a simple entities card format
+
+type: entities
+title: League Ladder
+entities:
+  - entity: sensor.dribl_2025_ladder
+    name: Teams in League
+    icon: mdi:format-list-numbered
+  - type: section
+    label: Top 3 Teams
+  - entity: sensor.dribl_2025_ladder
+    type: custom:template-entity-row
+    name: "1st Place"
+    state: "{{ state_attr('sensor.dribl_2025_ladder', 'ladder')[0].club_name if state_attr('sensor.dribl_2025_ladder', 'ladder') else 'N/A' }}"
+    secondary: "{{ state_attr('sensor.dribl_2025_ladder', 'ladder')[0].points if state_attr('sensor.dribl_2025_ladder', 'ladder') else 'N/A' }} pts"
+  - entity: sensor.dribl_2025_ladder
+    type: custom:template-entity-row
+    name: "2nd Place"
+    state: "{{ state_attr('sensor.dribl_2025_ladder', 'ladder')[1].club_name if state_attr('sensor.dribl_2025_ladder', 'ladder') and state_attr('sensor.dribl_2025_ladder', 'ladder')|length > 1 else 'N/A' }}"
+    secondary: "{{ state_attr('sensor.dribl_2025_ladder', 'ladder')[1].points if state_attr('sensor.dribl_2025_ladder', 'ladder') and state_attr('sensor.dribl_2025_ladder', 'ladder')|length > 1 else 'N/A' }} pts"
+  - entity: sensor.dribl_2025_ladder
+    type: custom:template-entity-row
+    name: "3rd Place"
+    state: "{{ state_attr('sensor.dribl_2025_ladder', 'ladder')[2].club_name if state_attr('sensor.dribl_2025_ladder', 'ladder') and state_attr('sensor.dribl_2025_ladder', 'ladder')|length > 2 else 'N/A' }}"
+    secondary: "{{ state_attr('sensor.dribl_2025_ladder', 'ladder')[2].points if state_attr('sensor.dribl_2025_ladder', 'ladder') and state_attr('sensor.dribl_2025_ladder', 'ladder')|length > 2 else 'N/A' }} pts"
+show_header_toggle: false

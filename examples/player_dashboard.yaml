@@ -1,0 +1,192 @@
+# Player Dashboard Example
+# Complete dashboard showing multiple player views
+
+title: Player Dashboard
+views:
+  - title: Team Squad
+    path: squad
+    icon: mdi:account-group
+    cards:
+      # Team Overview
+      - type: markdown
+        title: Team Squad Overview
+        content: |
+          ## Current Squad
+          
+          ### Key Players
+          - **Captain:** {{ states('sensor.dribl_john_doe') }}
+          - **Goalkeeper:** {{ states('sensor.dribl_jane_smith') }}
+          
+          ### Squad Statistics
+          - Total players tracked: 4
+          - Average age: 25 years
+          - International players: 2
+
+      # Players Grid
+      - type: grid
+        title: Squad Members
+        columns: 2
+        square: false
+        cards:
+          - type: tile
+            entity: sensor.dribl_john_doe
+            name: John Doe
+            icon: mdi:account-circle
+            color: teal
+            secondary_info: |
+              {% if state_attr('sensor.dribl_john_doe', 'age') %}
+              Age: {{ state_attr('sensor.dribl_john_doe', 'age') }}
+              {% endif %}
+              {% if state_attr('sensor.dribl_john_doe', 'is_captain') %}
+              • Captain
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/player_john_doe
+
+          - type: tile
+            entity: sensor.dribl_jane_smith
+            name: Jane Smith
+            icon: mdi:account-circle
+            color: pink
+            secondary_info: |
+              {% if state_attr('sensor.dribl_jane_smith', 'age') %}
+              Age: {{ state_attr('sensor.dribl_jane_smith', 'age') }}
+              {% endif %}
+              {% if state_attr('sensor.dribl_jane_smith', 'is_goalkeeper') %}
+              • Goalkeeper
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/player_jane_smith
+
+          - type: tile
+            entity: sensor.dribl_mike_wilson
+            name: Mike Wilson
+            icon: mdi:account-circle
+            color: blue
+            secondary_info: |
+              {% if state_attr('sensor.dribl_mike_wilson', 'age') %}
+              Age: {{ state_attr('sensor.dribl_mike_wilson', 'age') }}
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/player_mike_wilson
+
+          - type: tile
+            entity: sensor.dribl_sarah_jones
+            name: Sarah Jones
+            icon: mdi:account-circle
+            color: green
+            secondary_info: |
+              {% if state_attr('sensor.dribl_sarah_jones', 'age') %}
+              Age: {{ state_attr('sensor.dribl_sarah_jones', 'age') }}
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: /lovelace/player_sarah_jones
+
+  - title: Player Profile
+    path: player_john_doe
+    icon: mdi:account-circle
+    cards:
+      # Player Header
+      - type: markdown
+        content: |
+          <div style="display: flex; align-items: center; margin-bottom: 20px;">
+            {% if state_attr('sensor.dribl_john_doe', 'image') %}
+            <img src="{{ state_attr('sensor.dribl_john_doe', 'image') }}" 
+                 style="width: 80px; height: 80px; border-radius: 50%; margin-right: 20px; border: 3px solid #2196f3;" 
+                 onerror="this.style.display='none'" />
+            {% endif %}
+            <div>
+              <h1 style="margin: 0; color: #2196f3;">{{ states('sensor.dribl_john_doe') }}</h1>
+              <div style="color: #666; margin-top: 5px;">
+                {% if state_attr('sensor.dribl_john_doe', 'age') %}
+                Age: {{ state_attr('sensor.dribl_john_doe', 'age') }}
+                {% endif %}
+                {% if state_attr('sensor.dribl_john_doe', 'nationality') %}
+                • {{ state_attr('sensor.dribl_john_doe', 'nationality') }}
+                {% endif %}
+              </div>
+              <div style="margin-top: 8px;">
+                {% if state_attr('sensor.dribl_john_doe', 'is_captain') %}
+                <span style="background: #ffd700; color: #333; padding: 3px 10px; border-radius: 15px; font-size: 12px; margin-right: 8px;">Captain</span>
+                {% endif %}
+                {% if state_attr('sensor.dribl_john_doe', 'is_goalkeeper') %}
+                <span style="background: #4caf50; color: white; padding: 3px 10px; border-radius: 15px; font-size: 12px;">Goalkeeper</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+
+      # Player Stats
+      - type: markdown
+        title: Career Statistics
+        content: |
+          {% set career_stats = state_attr('sensor.dribl_john_doe', 'career_stats') %}
+          {% if career_stats %}
+          
+          <!-- Career Summary -->
+          {% set total_games = career_stats | sum(attribute='games_played') %}
+          {% set total_goals = career_stats | sum(attribute='goals') %}
+          
+          <div style="display: flex; justify-content: space-around; margin-bottom: 20px; background: #f5f5f5; padding: 15px; border-radius: 8px;">
+            <div style="text-align: center;">
+              <div style="font-size: 28px; font-weight: bold; color: #2196f3;">{{ total_games }}</div>
+              <div style="color: #666; font-size: 14px;">Games Played</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 28px; font-weight: bold; color: #4caf50;">{{ total_goals }}</div>
+              <div style="color: #666; font-size: 14px;">Goals Scored</div>
+            </div>
+            <div style="text-align: center;">
+              <div style="font-size: 28px; font-weight: bold; color: #ff9800;">{{ (total_goals / total_games * 100) | round(1) if total_games > 0 else 0 }}%</div>
+              <div style="color: #666; font-size: 14px;">Goals per Game</div>
+            </div>
+          </div>
+
+          <!-- Recent Seasons -->
+          <h3>Recent Seasons</h3>
+          {% for stat in career_stats[:3] %}
+          <div style="background: white; padding: 12px; margin-bottom: 8px; border-radius: 6px; border-left: 4px solid #2196f3; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong>{{ stat.season_name if stat.season_name else 'Unknown Season' }}</strong>
+                {% if stat.competition_name %}
+                <br><small style="color: #666;">{{ stat.competition_name }}</small>
+                {% endif %}
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 16px; font-weight: bold;">{{ stat.games_played if stat.games_played else 0 }} games</div>
+                <div style="color: #4caf50; font-weight: bold;">{{ stat.goals if stat.goals else 0 }} goals</div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+          
+          {% else %}
+          <div style="text-align: center; padding: 20px; color: #666;">
+            <div style="font-size: 48px; margin-bottom: 10px;">📊</div>
+            <div>No career statistics available</div>
+          </div>
+          {% endif %}
+
+      # Player Details
+      - type: entities
+        title: Player Details
+        entities:
+          - entity: sensor.dribl_john_doe
+            name: Full Name
+            icon: mdi:account-circle
+          - entity: sensor.dribl_john_doe
+            type: attribute
+            attribute: age
+            name: Age
+            icon: mdi:calendar-today
+          - entity: sensor.dribl_john_doe
+            type: attribute
+            attribute: nationality
+            name: Nationality
+            icon: mdi:flag
+        show_header_toggle: false

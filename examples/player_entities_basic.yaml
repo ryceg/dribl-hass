@@ -1,0 +1,30 @@
+# Basic Player Entities Card (No Custom Components)
+# Shows player information using only standard Home Assistant entities
+
+type: entities
+title: Player Information
+entities:
+  - entity: sensor.dribl_john_doe
+    name: Full Name
+    icon: mdi:account-circle
+  - entity: sensor.dribl_john_doe
+    type: attribute
+    attribute: age
+    name: Age
+    icon: mdi:calendar-today
+  - entity: sensor.dribl_john_doe
+    type: attribute
+    attribute: nationality
+    name: Nationality
+    icon: mdi:flag
+  - entity: sensor.dribl_john_doe
+    type: attribute
+    attribute: is_captain
+    name: Team Captain
+    icon: mdi:star
+  - entity: sensor.dribl_john_doe
+    type: attribute
+    attribute: is_goalkeeper
+    name: Goalkeeper
+    icon: mdi:soccer-field
+show_header_toggle: false
