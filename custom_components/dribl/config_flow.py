@@ -52,6 +52,7 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
     
     # Get available clubs for selection
     clubs = await api.get_clubs()
+    _LOGGER.debug("Retrieved clubs from API: %s", clubs)
     
     return {
         "title": NAME,
@@ -107,16 +108,19 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         
         # Create club options
         club_options = {}
+        _LOGGER.debug("Available clubs: %s", self.clubs)
         for club in self.clubs:
             club_id = club.get("id")
             club_name = club.get("attributes", {}).get("name", "Unknown Club")
+            _LOGGER.debug("Processing club: id=%s, name=%s", club_id, club_name)
             if club_id:
                 club_options[club_id] = club_name
+        _LOGGER.debug("Club options: %s", club_options)
         
         return self.async_show_form(
             step_id="clubs",
             data_schema=vol.Schema({
-                vol.Optional(CONF_CLUBS, default=[]): cv.multi_select(club_options),
+                vol.Optional(CONF_CLUBS, default=[]): cv.multi_select(club_options if club_options else {"no_clubs": "No clubs available"}),
             }),
         )
 

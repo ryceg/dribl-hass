@@ -2,7 +2,7 @@
 import asyncio
 import logging
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urlencode
 
 import aiohttp
@@ -38,7 +38,7 @@ class DriblAPI:
         endpoint: str,
         params: Optional[Dict[str, Any]] = None,
         timeout: int = 10,
-    ) -> Dict[str, Any]:
+    ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         """Make a request to the Dribl API."""
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
@@ -65,7 +65,10 @@ class DriblAPI:
         """Get all clubs."""
         try:
             data = await self._request("GET", "/list/clubs", {"disable_paging": "true"})
-            return data if isinstance(data, list) else data.get("data", [])
+            _LOGGER.debug("Raw clubs API response: %s", data)
+            result = data if isinstance(data, list) else data.get("data", [])
+            _LOGGER.debug("Processed clubs result: %s", result)
+            return result
         except DriblAPIError as err:
             _LOGGER.error("Failed to get clubs: %s", err)
             return []
