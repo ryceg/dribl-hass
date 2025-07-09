@@ -15,7 +15,6 @@ from .const import (
     CONF_CLUBS,
     CONF_PLAYERS,
     CONF_RESULTS_HOURS,
-    CONF_TEAMS,
     CONF_TENANT_ID,
     CONF_TIMEZONE,
     CONF_UPDATE_INTERVAL,
@@ -39,7 +38,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     tenant_id = entry.data.get(CONF_TENANT_ID, DEFAULT_TENANT)
     timezone = entry.data.get(CONF_TIMEZONE, DEFAULT_TIMEZONE)
     clubs = entry.data.get(CONF_CLUBS, [])
-    teams = entry.data.get(CONF_TEAMS, [])
     players = entry.data.get(CONF_PLAYERS, [])
     results_hours = entry.options.get(CONF_RESULTS_HOURS, DEFAULT_RESULTS_HOURS)
     update_interval = entry.options.get(CONF_UPDATE_INTERVAL, DEFAULT_UPDATE_INTERVAL_MINUTES)
@@ -59,7 +57,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass,
         api,
         clubs,
-        teams,
         players,
         results_hours,
         timedelta(minutes=update_interval),
@@ -100,7 +97,6 @@ class DriblDataUpdateCoordinator(DataUpdateCoordinator):
         hass: HomeAssistant,
         api: DriblAPI,
         clubs: list,
-        teams: list,
         players: list,
         results_hours: int,
         update_interval: timedelta,
@@ -108,7 +104,6 @@ class DriblDataUpdateCoordinator(DataUpdateCoordinator):
         """Initialize."""
         self.api = api
         self.clubs = clubs
-        self.teams = teams
         self.players = players
         self.results_hours = results_hours
         

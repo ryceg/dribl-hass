@@ -15,7 +15,6 @@ from .const import (
     CONF_CLUBS,
     CONF_PLAYERS,
     CONF_RESULTS_HOURS,
-    CONF_TEAMS,
     CONF_TENANT_ID,
     CONF_TIMEZONE,
     CONF_UPDATE_INTERVAL,
@@ -34,7 +33,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_TENANT_ID, default=DEFAULT_TENANT): cv.string,
         vol.Required(CONF_TIMEZONE, default=DEFAULT_TIMEZONE): cv.string,
         vol.Optional(CONF_RESULTS_HOURS, default=DEFAULT_RESULTS_HOURS): vol.All(
-            vol.Coerce(int), vol.Range(min=1, max=168)
+            vol.Coerce(int), vol.Clamp(min=1, max=168)
         ),
         vol.Optional(CONF_UPDATE_INTERVAL, default=DEFAULT_UPDATE_INTERVAL_MINUTES): vol.All(
             vol.Coerce(int), vol.Range(min=5, max=1440)
@@ -69,7 +68,6 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
         self.data: Dict[str, Any] = {}
         self.clubs: list = []
-        self.teams: list = []
         self.players: list = []
 
     async def async_step_user(
@@ -105,7 +103,7 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle club selection."""
         if user_input is not None:
             self.data[CONF_CLUBS] = user_input.get(CONF_CLUBS, [])
-            return await self.async_step_teams()
+            return await self.async_step_players()
         
         # Create club options
         club_options = {}
@@ -122,28 +120,20 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }),
         )
 
-    async def async_step_teams(
-        self, user_input: Optional[Dict[str, Any]] = None
-    ) -> FlowResult:
-        """Handle team selection."""
-        if user_input is not None:
-            self.data[CONF_TEAMS] = user_input.get(CONF_TEAMS, [])
-            return await self.async_step_players()
-        
-        # For now, skip team selection - would need leagues API to get teams
-        return self.async_show_form(
-            step_id="teams",
-            data_schema=vol.Schema({
-                vol.Optional(CONF_TEAMS, default=[]): cv.multi_select({}),
-            }),
-        )
 
     async def async_step_players(
         self, user_input: Optional[Dict[str, Any]] = None
     ) -> FlowResult:
         """Handle player selection."""
         if user_input is not None:
-            self.data[CONF_PLAYERS] = user_input.get(CONF_PLAYERS, [])
+            # For now, allow manual entry of player IDs
+            player_input = user_input.get("player_ids", "")
+            if player_input:
+                # Split by comma and clean up
+                player_ids = [p.strip() for p in player_input.split(",") if p.strip()]
+                self.data[CONF_PLAYERS] = player_ids
+            else:
+                self.data[CONF_PLAYERS] = []
             
             # Create the config entry
             return self.async_create_entry(
@@ -151,11 +141,11 @@ class DriblConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data=self.data,
             )
         
-        # For now, skip player selection - would need member search API
+        # Allow manual entry of player IDs (comma-separated)
         return self.async_show_form(
             step_id="players",
             data_schema=vol.Schema({
-                vol.Optional(CONF_PLAYERS, default=[]): cv.multi_select({}),
+                vol.Optional("player_ids", default=""): cv.string,
             }),
         )
 
@@ -191,7 +181,7 @@ class DriblOptionsFlowHandler(config_entries.OptionsFlow):
                         default=self.config_entry.options.get(
                             CONF_RESULTS_HOURS, DEFAULT_RESULTS_HOURS
                         ),
-                    ): vol.All(vol.Coerce(int), vol.Range(min=1, max=168)),
+                    ): vol.All(vol.Coerce(int), vol.Clamp(min=1, max=168)),
                     vol.Optional(
                         CONF_UPDATE_INTERVAL,
                         default=self.config_entry.options.get(

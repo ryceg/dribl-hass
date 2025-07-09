@@ -5,31 +5,24 @@
         "title": "Set up Dribl",
         "description": "Configure your Dribl football integration",
         "data": {
-          "tenant_id": "Tenant ID",
-          "timezone": "Timezone",
-          "results_hours": "Results display hours",
-          "update_interval": "Update interval (minutes)"
+          "tenant_id": "Dribl Tenant ID",
+          "timezone": "Timezone (e.g., Australia/Melbourne)",
+          "results_hours": "Hours to display recent results (1-168)",
+          "update_interval": "Update interval in minutes (5-1440)"
         }
       },
       "clubs": {
         "title": "Select Clubs",
         "description": "Choose which clubs to follow",
         "data": {
-          "clubs": "Clubs to follow"
-        }
-      },
-      "teams": {
-        "title": "Select Teams",
-        "description": "Choose which teams to follow",
-        "data": {
-          "teams": "Teams to follow"
+          "clubs": "Select clubs to track fixtures and results"
         }
       },
       "players": {
         "title": "Select Players",
         "description": "Choose which players to follow",
         "data": {
-          "players": "Players to follow"
+          "player_ids": "Player IDs to track (comma-separated)"
         }
       }
     },
@@ -49,8 +42,8 @@
         "title": "Dribl Options",
         "description": "Update your Dribl configuration",
         "data": {
-          "results_hours": "Results display hours",
-          "update_interval": "Update interval (minutes)"
+          "results_hours": "Hours to display recent results (1-168)",
+          "update_interval": "Update interval in minutes (5-1440)"
         }
       }
     }

@@ -19,7 +19,6 @@ FAST_UPDATE_INTERVAL: Final = timedelta(minutes=5)
 CONF_TENANT_ID: Final = "tenant_id"
 CONF_TIMEZONE: Final = "timezone"
 CONF_CLUBS: Final = "clubs"
-CONF_TEAMS: Final = "teams"
 CONF_PLAYERS: Final = "players"
 CONF_RESULTS_HOURS: Final = "results_hours"
 CONF_UPDATE_INTERVAL: Final = "update_interval"
