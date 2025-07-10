@@ -60,7 +60,7 @@ content: |
             {% if team.recent_form %}
             <div class="flex space-x-1">
               {% for match in team.recent_form %}
-              <a href="{{ match.link }}" target="_blank" class="tooltip" data-tip="{{ match.home_team }} {{ match.home_score }}-{{ match.away_score }} {{ match.away_team }} ({{ match.date | as_timestamp | timestamp_custom('%d/%m %H:%M') }})">
+              <a href="{{ match.link }}" target="_blank" class="tooltip" data-tip="{{ match.home_team }} {{ match.home_score }}-{{ match.away_score }} {{ match.away_team }} ({{ match.date }})">
                 <div class="badge badge-xs {% if match.result == 'W' %}badge-success{% elif match.result == 'L' %}badge-error{% elif match.result == 'D' %}badge-warning{% else %}badge-ghost{% endif %}">
                   {{ match.result }}
                 </div>
@@ -71,9 +71,16 @@ content: |
           </td>
           <td class="text-center">
             {% if team.up_next %}
-            <a href="{{ team.up_next.link }}" target="_blank" class="tooltip" data-tip="{{ team.up_next.date | as_timestamp | timestamp_custom('%d/%m %H:%M') }}">
+            <a href="{{ team.up_next.link }}" target="_blank" class="tooltip" data-tip="{{ team.up_next.date }}">
               <div class="flex items-center space-x-1">
                 <span class="text-xs">{{ 'vs' if team.up_next.home_away == 'home' else '@' }}</span>
+                {% if team.up_next.opponent_logo %}
+                <div class="avatar">
+                  <div class="w-4 h-4 rounded">
+                    <img src="{{ team.up_next.opponent_logo }}" alt="{{ team.up_next.opponent }}" />
+                  </div>
+                </div>
+                {% endif %}
                 <span class="text-xs font-medium">{{ team.up_next.opponent }}</span>
               </div>
             </a>
@@ -86,7 +93,7 @@ content: |
   </div>
 
   <div class="text-xs text-base-content/60 text-center mt-4">
-    Last updated: {{ state_attr(ladder_entity, 'last_updated') | as_timestamp | timestamp_custom('%d/%m %H:%M') if state_attr(ladder_entity, 'last_updated') else 'Unknown' }}
+    Last updated: {{ state_attr(ladder_entity, 'last_updated') if state_attr(ladder_entity, 'last_updated') else 'Unknown' }}
   </div>
 
   {% else %}

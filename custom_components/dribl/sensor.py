@@ -161,6 +161,8 @@ class DriblNextGameSensor(DriblSensorEntity):
             "google_maps_link": maps_link,
             "ground_address": attrs.get("ground_address"),
             "match_name": attrs.get("name"),
+            "match_hash": attrs.get("hash_id"),
+            "match_url": f"{self.config_entry.data.get('subdomain', 'https://dribl.com')}/matchcentre?m={attrs.get('hash_id')}" if attrs.get('hash_id') else None,
             "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
         }
 
@@ -473,10 +475,20 @@ class DriblLadderSensor(DriblSensorEntity):
                 else:
                     result = "?"
 
+                # Format the date for recent form
+                formatted_date = match.get("date")
+                if formatted_date:
+                    try:
+                        dt = datetime.fromisoformat(formatted_date.replace('Z', '+00:00'))
+                        local_dt = dt_util.as_local(dt)
+                        formatted_date = local_dt.strftime("%Y-%m-%d %H:%M")
+                    except (ValueError, TypeError):
+                        pass
+
                 recent_form.append({
                     "result": result,
                     "link": f"{subdomain}/matchcentre?m={match_id}" if match_id else None,
-                    "date": match.get("date"),
+                    "date": formatted_date,
                     "home_team": match.get("home_club_name"),
                     "away_team": match.get("away_club_name"),
                     "home_score": home_score,
@@ -489,12 +501,23 @@ class DriblLadderSensor(DriblSensorEntity):
             if upcoming_matches:
                 next_match = upcoming_matches[0]
                 match_id = next_match.get("match_hash_id")
+                # Format the date for up next
+                formatted_date = next_match.get("date")
+                if formatted_date:
+                    try:
+                        dt = datetime.fromisoformat(formatted_date.replace('Z', '+00:00'))
+                        local_dt = dt_util.as_local(dt)
+                        formatted_date = local_dt.strftime("%Y-%m-%d %H:%M")
+                    except (ValueError, TypeError):
+                        pass
+
                 up_next = {
                     "link": f"{subdomain}/matchcentre?m={match_id}" if match_id else None,
-                    "date": next_match.get("date"),
+                    "date": formatted_date,
                     "home_team": next_match.get("home_club_name"),
                     "away_team": next_match.get("away_club_name"),
                     "opponent": next_match.get("away_club_name") if attrs.get("team_hash_id") == next_match.get("home_team_hash_id") else next_match.get("home_club_name"),
+                    "opponent_logo": next_match.get("away_club_logo") if attrs.get("team_hash_id") == next_match.get("home_team_hash_id") else next_match.get("home_club_logo"),
                     "home_away": "home" if attrs.get("team_hash_id") == next_match.get("home_team_hash_id") else "away",
                 }
 
