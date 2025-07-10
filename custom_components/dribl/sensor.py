@@ -161,6 +161,7 @@ class DriblNextGameSensor(DriblSensorEntity):
             "google_maps_link": maps_link,
             "ground_address": attrs.get("ground_address"),
             "match_name": attrs.get("name"),
+            "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
         }
 
 
@@ -345,6 +346,20 @@ class DriblPlayerSensor(DriblSensorEntity):
         # Get career stats
         career_stats = self.coordinator.data.get("player_careers", {}).get(self.player_id, {})
         
+        # Calculate lifetime totals
+        lifetime_totals = {}
+        if isinstance(career_stats, list):
+            lifetime_totals = {
+                "minutes": sum(season.get("minutes", 0) for season in career_stats),
+                "goals": sum(season.get("goals", 0) for season in career_stats),
+                "started": sum(season.get("started", 0) for season in career_stats),
+                "played": sum(season.get("played", 0) for season in career_stats),
+                "yellow_cards": sum(season.get("yellow_cards", 0) for season in career_stats),
+                "red_cards": sum(season.get("red_cards", 0) for season in career_stats),
+                "td_cards": sum(season.get("td_cards", 0) for season in career_stats),
+                "votes": sum(season.get("votes", 0) for season in career_stats),
+            }
+        
         return {
             "player_id": self.player_id,
             "first_name": attrs.get("first_name"),
@@ -358,6 +373,8 @@ class DriblPlayerSensor(DriblSensorEntity):
             "club_color": attrs.get("club_color"),
             "club_accent": attrs.get("club_accent"),
             "career_stats": career_stats,
+            "lifetime_totals": lifetime_totals,
+            "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
         }
 
 
@@ -504,4 +521,5 @@ class DriblLadderSensor(DriblSensorEntity):
         return {
             "ladder": formatted_ladder,
             "team_count": len(formatted_ladder),
+            "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
         }

@@ -1,0 +1,163 @@
+# Next Game Card
+# Shows the upcoming match with prominent date, time, and teams
+
+type: custom:tailwindcss-template-card
+title: Next Game
+content: |
+  {% set next_game_entity = 'sensor.dribl_next_game' %}
+  {% set next_game_state = states(next_game_entity) %}
+  {% set game_date = next_game_state + ':00' %}
+  {% set home_team = state_attr(next_game_entity, 'home_team') %}
+  {% set away_team = state_attr(next_game_entity, 'away_team') %}
+  {% set home_logo = state_attr(next_game_entity, 'home_logo') %}
+  {% set away_logo = state_attr(next_game_entity, 'away_logo') %}
+  {% set competition = state_attr(next_game_entity, 'competition') %}
+  {% set league = state_attr(next_game_entity, 'league') %}
+  {% set round = state_attr(next_game_entity, 'round') %}
+  {% set ground_name = state_attr(next_game_entity, 'ground_name') %}
+  {% set field_name = state_attr(next_game_entity, 'field_name') %}
+  {% set ground_address = state_attr(next_game_entity, 'ground_address') %}
+  {% set google_maps_link = state_attr(next_game_entity, 'google_maps_link') %}
+  {% set status = state_attr(next_game_entity, 'status') %}
+
+  {% if next_game_state != 'No upcoming games' %}
+  <!-- Match Header -->
+  <div class="card bg-primary text-primary-content shadow-lg mb-4">
+    <div class="card-body text-center">
+      <h2 class="card-title text-3xl font-bold justify-center">
+        {{ game_date | as_timestamp | timestamp_custom('%A') }}
+      </h2>
+      <div class="text-6xl font-bold">
+        {{ game_date | as_timestamp | timestamp_custom('%H:%M') }}
+      </div>
+      <div class="text-xl">
+        {{ game_date | as_timestamp | timestamp_custom('%d %B %Y') }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Teams -->
+  <div class="card bg-base-100 shadow-lg mb-4">
+    <div class="card-body">
+      <div class="grid grid-cols-3 gap-4 items-center">
+        <!-- Home Team -->
+        <div class="text-center">
+          {% if home_logo %}
+          <div class="avatar mb-2">
+            <div class="w-16 h-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+              <img src="{{ home_logo }}" alt="{{ home_team }}" />
+            </div>
+          </div>
+          {% endif %}
+          <div class="font-bold text-lg">{{ home_team }}</div>
+          <div class="badge badge-outline">HOME</div>
+        </div>
+
+        <!-- VS -->
+        <div class="text-center">
+          <div class="text-4xl font-bold text-primary">VS</div>
+        </div>
+
+        <!-- Away Team -->
+        <div class="text-center">
+          {% if away_logo %}
+          <div class="avatar mb-2">
+            <div class="w-16 h-16 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+              <img src="{{ away_logo }}" alt="{{ away_team }}" />
+            </div>
+          </div>
+          {% endif %}
+          <div class="font-bold text-lg">{{ away_team }}</div>
+          <div class="badge badge-outline">AWAY</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Match Details -->
+  <div class="card bg-base-200 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Competition Info -->
+        <div>
+          <h3 class="font-bold text-lg mb-2">Competition</h3>
+          <div class="space-y-1">
+            {% if competition %}
+            <div class="flex items-center">
+              <div class="badge badge-primary mr-2">COMP</div>
+              <span>{{ competition }}</span>
+            </div>
+            {% endif %}
+            {% if league %}
+            <div class="flex items-center">
+              <div class="badge badge-secondary mr-2">LEAGUE</div>
+              <span>{{ league }}</span>
+            </div>
+            {% endif %}
+            {% if round %}
+            <div class="flex items-center">
+              <div class="badge badge-accent mr-2">ROUND</div>
+              <span>{{ round }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Venue Info -->
+        <div>
+          <h3 class="font-bold text-lg mb-2">Venue</h3>
+          <div class="space-y-1">
+            {% if ground_name %}
+            <div class="flex items-center">
+              <div class="badge badge-info mr-2">GROUND</div>
+              <span>{{ ground_name }}</span>
+            </div>
+            {% endif %}
+            {% if field_name and field_name != ground_name %}
+            <div class="flex items-center">
+              <div class="badge badge-info mr-2">FIELD</div>
+              <span>{{ field_name }}</span>
+            </div>
+            {% endif %}
+            {% if ground_address %}
+            <div class="flex items-center">
+              <div class="badge badge-neutral mr-2">ADDRESS</div>
+              <span class="text-sm">{{ ground_address }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="card-actions justify-center items-center mt-4">
+        {% if google_maps_link %}
+        <a href="{{ google_maps_link }}" target="_blank" class="btn btn-primary btn-sm">
+          <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+          </svg>
+          Directions
+        </a>
+        {% endif %}
+        {% if status %}
+        <div class="badge badge-ghost">{{ status | upper }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="text-xs text-base-content/60 text-center pb-4">
+    Last updated: {{ state_attr(next_game_entity, 'last_updated') | as_timestamp | timestamp_custom('%d/%m %H:%M') if state_attr(next_game_entity, 'last_updated') else 'Unknown' }}
+  </div>
+
+  {% else %}
+  <div class="hero min-h-32">
+    <div class="hero-content text-center">
+      <div>
+        <div class="text-5xl mb-4">⚽</div>
+        <div class="text-base-content/70">No upcoming games</div>
+        <small class="text-base-content/50">Check back later for fixture updates</small>
+      </div>
+    </div>
+  </div>
+  {% endif %}

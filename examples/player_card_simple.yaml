@@ -1,9 +1,0 @@
-# Simple Player Card
-# Basic entity card showing player information
-
-type: entity
-entity: sensor.dribl_john_doe
-name: John Doe
-icon: mdi:account-circle
-tap_action:
-  action: more-info

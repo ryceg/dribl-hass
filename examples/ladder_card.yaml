@@ -1,0 +1,102 @@
+type: custom:tailwindcss-template-card
+title: League Ladder
+content: |
+  {% set ladder_entity = 'sensor.dribl_2025_ladder' %}
+  {% set ladder_data = state_attr(ladder_entity, 'ladder') %}
+  {% set team_count = state_attr(ladder_entity, 'team_count') %}
+
+  {% if ladder_data %}
+  <div class="overflow-x-auto">
+    <table class="table table-compact w-full">
+      <thead>
+        <tr class="bg-primary text-primary-content">
+          <th class="text-center">#</th>
+          <th>Team</th>
+          <th class="text-center">P</th>
+          <th class="text-center">W</th>
+          <th class="text-center">D</th>
+          <th class="text-center">L</th>
+          <th class="text-center">B</th>
+          <th class="text-center">F</th>
+          <th class="text-center">GF</th>
+          <th class="text-center">GA</th>
+          <th class="text-center">GD</th>
+          <th class="text-center">Avg</th>
+          <th class="text-center">Pts</th>
+          <th class="text-center">Form</th>
+          <th class="text-center">Up Next</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for team in ladder_data %}
+        <tr class="{% if team.position <= 4 %}bg-success/10{% elif team.position > (team_count - 2) %}bg-error/10{% endif %}">
+          <td class="text-center font-bold">{{ team.position }}</td>
+          <td>
+            <div class="flex items-center space-x-2">
+              {% if team.club_logo %}
+              <div class="avatar">
+                <div class="w-6 h-6 rounded">
+                  <img src="{{ team.club_logo }}" alt="{{ team.club_name }}" />
+                </div>
+              </div>
+              {% endif %}
+              <div class="font-medium">{{ team.team_name }}</div>
+            </div>
+          </td>
+          <td class="text-center">{{ team.played }}</td>
+          <td class="text-center">{{ team.won }}</td>
+          <td class="text-center">{{ team.drawn }}</td>
+          <td class="text-center">{{ team.lost }}</td>
+          <td class="text-center">{{ team.byes }}</td>
+          <td class="text-center">{{ team.forfeits }}</td>
+          <td class="text-center">{{ team.goals_for }}</td>
+          <td class="text-center">{{ team.goals_against }}</td>
+          <td class="text-center {% if team.goal_difference > 0 %}text-success{% elif team.goal_difference < 0 %}text-error{% endif %}">
+            {{ team.goal_difference }}
+          </td>
+          <td class="text-center">{{ team.points_per_game }}</td>
+          <td class="text-center font-bold">{{ team.points }}</td>
+          <td class="text-center">
+            {% if team.recent_form %}
+            <div class="flex space-x-1">
+              {% for match in team.recent_form %}
+              <a href="{{ match.link }}" target="_blank" class="tooltip" data-tip="{{ match.home_team }} {{ match.home_score }}-{{ match.away_score }} {{ match.away_team }} ({{ match.date | as_timestamp | timestamp_custom('%d/%m %H:%M') }})">
+                <div class="badge badge-xs {% if match.result == 'W' %}badge-success{% elif match.result == 'L' %}badge-error{% elif match.result == 'D' %}badge-warning{% else %}badge-ghost{% endif %}">
+                  {{ match.result }}
+                </div>
+              </a>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </td>
+          <td class="text-center">
+            {% if team.up_next %}
+            <a href="{{ team.up_next.link }}" target="_blank" class="tooltip" data-tip="{{ team.up_next.date | as_timestamp | timestamp_custom('%d/%m %H:%M') }}">
+              <div class="flex items-center space-x-1">
+                <span class="text-xs">{{ 'vs' if team.up_next.home_away == 'home' else '@' }}</span>
+                <span class="text-xs font-medium">{{ team.up_next.opponent }}</span>
+              </div>
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="text-xs text-base-content/60 text-center mt-4">
+    Last updated: {{ state_attr(ladder_entity, 'last_updated') | as_timestamp | timestamp_custom('%d/%m %H:%M') if state_attr(ladder_entity, 'last_updated') else 'Unknown' }}
+  </div>
+
+  {% else %}
+  <div class="hero min-h-32">
+    <div class="hero-content text-center">
+      <div>
+        <div class="text-5xl mb-4">📊</div>
+        <div class="text-base-content/70">No ladder data available</div>
+        <small class="text-base-content/50">Check your Dribl integration configuration</small>
+      </div>
+    </div>
+  </div>
+  {% endif %}
