@@ -24,30 +24,30 @@ async def async_setup_entry(
 ) -> None:
     """Set up Dribl sensors."""
     coordinator: DriblDataUpdateCoordinator = hass.data[DOMAIN][config_entry.entry_id]
-    
+
     entities = [
         DriblNextGameSensor(coordinator, config_entry),
         DriblRecentResultsSensor(coordinator, config_entry),
     ]
-    
+
     # Add club sensors
     for club_id in coordinator.clubs:
         entities.append(DriblClubSensor(coordinator, config_entry, club_id))
-    
+
     # Add player sensors
     for player_id in coordinator.players:
         entities.append(DriblPlayerSensor(coordinator, config_entry, player_id))
-    
+
     # Add ladder sensors
     for league_id in coordinator.leagues:
         entities.append(DriblLadderSensor(coordinator, config_entry, league_id))
-    
+
     async_add_entities(entities)
 
 
 class DriblSensorEntity(CoordinatorEntity, SensorEntity):
     """Base class for Dribl sensors."""
-    
+
     def __init__(
         self,
         coordinator: DriblDataUpdateCoordinator,
@@ -60,13 +60,13 @@ class DriblSensorEntity(CoordinatorEntity, SensorEntity):
         self.config_entry = config_entry
         self.sensor_type = sensor_type
         self.identifier = identifier
-        
+
         # Set unique ID
         if identifier:
             self._attr_unique_id = f"{config_entry.entry_id}_{sensor_type}_{identifier}"
         else:
             self._attr_unique_id = f"{config_entry.entry_id}_{sensor_type}"
-        
+
         # Set device info
         self._attr_device_info = {
             "identifiers": {(DOMAIN, config_entry.entry_id)},
@@ -84,7 +84,7 @@ class DriblSensorEntity(CoordinatorEntity, SensorEntity):
 
 class DriblNextGameSensor(DriblSensorEntity):
     """Sensor for next scheduled game."""
-    
+
     def __init__(
         self,
         coordinator: DriblDataUpdateCoordinator,
@@ -101,11 +101,11 @@ class DriblNextGameSensor(DriblSensorEntity):
         next_game = self.coordinator.data.get("next_game")
         if not next_game:
             return "No upcoming games"
-        
+
         game_date = next_game.get("attributes", {}).get("date")
         if not game_date:
             return "Unknown"
-        
+
         try:
             # Parse the date string
             dt = datetime.fromisoformat(game_date.replace('Z', '+00:00'))
@@ -121,7 +121,7 @@ class DriblNextGameSensor(DriblSensorEntity):
         next_game = self.coordinator.data.get("next_game")
         if not next_game:
             return None
-        
+
         attrs = next_game.get("attributes", {})
         # Use home team logo as entity picture
         return attrs.get("home_logo")
@@ -132,9 +132,9 @@ class DriblNextGameSensor(DriblSensorEntity):
         next_game = self.coordinator.data.get("next_game")
         if not next_game:
             return {}
-        
+
         attrs = next_game.get("attributes", {})
-        
+
         # Create Google Maps link
         maps_link = None
         if attrs.get("ground_latitude") and attrs.get("ground_longitude"):
@@ -146,7 +146,7 @@ class DriblNextGameSensor(DriblSensorEntity):
                 maps_link = f"https://maps.google.com/?q={query}@{lat},{lng}"
             else:
                 maps_link = f"https://maps.google.com/?q={lat},{lng}"
-        
+
         return {
             "home_team": attrs.get("home_team_name"),
             "away_team": attrs.get("away_team_name"),
@@ -161,13 +161,13 @@ class DriblNextGameSensor(DriblSensorEntity):
             "google_maps_link": maps_link,
             "ground_address": attrs.get("ground_address"),
             "match_name": attrs.get("name"),
-            "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
+            "last_updated": self.coordinator.last_update_success.isoformat() if self.coordinator.last_update_success else None,
         }
 
 
 class DriblRecentResultsSensor(DriblSensorEntity):
     """Sensor for recent game results."""
-    
+
     def __init__(
         self,
         coordinator: DriblDataUpdateCoordinator,
@@ -188,14 +188,14 @@ class DriblRecentResultsSensor(DriblSensorEntity):
     def extra_state_attributes(self) -> Dict[str, Any]:
         """Return extra attributes."""
         results = self.coordinator.data.get("recent_results", [])
-        
+
         if not results:
             return {"results": []}
-        
+
         formatted_results = []
         for result in results:
             attrs = result.get("attributes", {})
-            
+
             # Format the date
             game_date = attrs.get("date")
             formatted_date = "Unknown"
@@ -206,7 +206,7 @@ class DriblRecentResultsSensor(DriblSensorEntity):
                     formatted_date = local_dt.strftime("%Y-%m-%d %H:%M")
                 except (ValueError, TypeError):
                     pass
-            
+
             formatted_results.append({
                 "date": formatted_date,
                 "home_team": attrs.get("home_team_name"),
@@ -221,7 +221,7 @@ class DriblRecentResultsSensor(DriblSensorEntity):
                 "ground_name": attrs.get("ground_name"),
                 "status": attrs.get("status"),
             })
-        
+
         return {
             "results": formatted_results,
             "count": len(formatted_results),
@@ -230,7 +230,7 @@ class DriblRecentResultsSensor(DriblSensorEntity):
 
 class DriblClubSensor(DriblSensorEntity):
     """Sensor for club information."""
-    
+
     def __init__(
         self,
         coordinator: DriblDataUpdateCoordinator,
@@ -241,7 +241,7 @@ class DriblClubSensor(DriblSensorEntity):
         super().__init__(coordinator, config_entry, "club", club_id)
         self.club_id = club_id
         self._attr_icon = "mdi:shield-star"
-        
+
         # Set name based on club data
         club_data = coordinator.data.get("clubs", {}).get(club_id, {})
         club_name = club_data.get("attributes", {}).get("name", f"Club {club_id}")
@@ -253,7 +253,7 @@ class DriblClubSensor(DriblSensorEntity):
         club_data = self.coordinator.data.get("clubs", {}).get(self.club_id, {})
         if not club_data:
             return "Unknown"
-        
+
         return club_data.get("attributes", {}).get("name", "Unknown")
 
     @property
@@ -262,7 +262,7 @@ class DriblClubSensor(DriblSensorEntity):
         club_data = self.coordinator.data.get("clubs", {}).get(self.club_id, {})
         if not club_data:
             return None
-        
+
         attrs = club_data.get("attributes", {})
         return attrs.get("image")
 
@@ -272,9 +272,9 @@ class DriblClubSensor(DriblSensorEntity):
         club_data = self.coordinator.data.get("clubs", {}).get(self.club_id, {})
         if not club_data:
             return {}
-        
+
         attrs = club_data.get("attributes", {})
-        
+
         return {
             "club_id": self.club_id,
             "name": attrs.get("name"),
@@ -291,7 +291,7 @@ class DriblClubSensor(DriblSensorEntity):
 
 class DriblPlayerSensor(DriblSensorEntity):
     """Sensor for player information."""
-    
+
     def __init__(
         self,
         coordinator: DriblDataUpdateCoordinator,
@@ -302,7 +302,7 @@ class DriblPlayerSensor(DriblSensorEntity):
         super().__init__(coordinator, config_entry, "player", player_id)
         self.player_id = player_id
         self._attr_icon = "mdi:account-circle"
-        
+
         # Set name based on player data
         player_data = coordinator.data.get("players", {}).get(player_id, {})
         attrs = player_data.get("attributes", {})
@@ -317,11 +317,11 @@ class DriblPlayerSensor(DriblSensorEntity):
         player_data = self.coordinator.data.get("players", {}).get(self.player_id, {})
         if not player_data:
             return "Unknown"
-        
+
         attrs = player_data.get("attributes", {})
         first_name = attrs.get("first_name", "")
         last_name = attrs.get("last_name", "")
-        
+
         return f"{first_name} {last_name}".strip() or "Unknown"
 
     @property
@@ -330,7 +330,7 @@ class DriblPlayerSensor(DriblSensorEntity):
         player_data = self.coordinator.data.get("players", {}).get(self.player_id, {})
         if not player_data:
             return None
-        
+
         attrs = player_data.get("attributes", {})
         return attrs.get("image")
 
@@ -340,12 +340,12 @@ class DriblPlayerSensor(DriblSensorEntity):
         player_data = self.coordinator.data.get("players", {}).get(self.player_id, {})
         if not player_data:
             return {}
-        
+
         attrs = player_data.get("attributes", {})
-        
+
         # Get career stats
         career_stats = self.coordinator.data.get("player_careers", {}).get(self.player_id, {})
-        
+
         # Calculate lifetime totals
         lifetime_totals = {}
         if isinstance(career_stats, list):
@@ -359,7 +359,7 @@ class DriblPlayerSensor(DriblSensorEntity):
                 "td_cards": sum(season.get("td_cards", 0) for season in career_stats),
                 "votes": sum(season.get("votes", 0) for season in career_stats),
             }
-        
+
         return {
             "player_id": self.player_id,
             "first_name": attrs.get("first_name"),
@@ -374,13 +374,13 @@ class DriblPlayerSensor(DriblSensorEntity):
             "club_accent": attrs.get("club_accent"),
             "career_stats": career_stats,
             "lifetime_totals": lifetime_totals,
-            "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
+            "last_updated": self.coordinator.last_update_success.isoformat() if self.coordinator.last_update_success else None,
         }
 
 
 class DriblLadderSensor(DriblSensorEntity):
     """Sensor for league ladder standings."""
-    
+
     def __init__(
         self,
         coordinator: DriblDataUpdateCoordinator,
@@ -391,7 +391,7 @@ class DriblLadderSensor(DriblSensorEntity):
         super().__init__(coordinator, config_entry, "ladder", league_id)
         self.league_id = league_id
         self._attr_icon = "mdi:format-list-numbered"
-        
+
         # Set name based on league data
         league_name = f"League {league_id}"
         if coordinator.data.get("ladders", {}).get(league_id):
@@ -403,7 +403,7 @@ class DriblLadderSensor(DriblSensorEntity):
                 season_name = attrs.get("season_name", "")
                 if season_name:
                     league_name = f"{season_name} Ladder"
-        
+
         self._attr_name = f"Dribl {league_name}"
 
     @property
@@ -418,7 +418,7 @@ class DriblLadderSensor(DriblSensorEntity):
         ladder_data = self.coordinator.data.get("ladders", {}).get(self.league_id, [])
         if not ladder_data:
             return None
-        
+
         # Use the logo of the team in first position
         first_team = ladder_data[0]
         attrs = first_team.get("attributes", {})
@@ -430,14 +430,14 @@ class DriblLadderSensor(DriblSensorEntity):
         ladder_data = self.coordinator.data.get("ladders", {}).get(self.league_id, [])
         if not ladder_data:
             return {"ladder": []}
-        
+
         # Get subdomain from config or use default
         subdomain = self.config_entry.data.get("subdomain", DEFAULT_SUBDOMAIN)
-        
+
         formatted_ladder = []
         for entry in ladder_data:
             attrs = entry.get("attributes", {})
-            
+
             # Format recent form with links
             recent_form = []
             recent_matches = attrs.get("recent_matches", [])
@@ -445,7 +445,7 @@ class DriblLadderSensor(DriblSensorEntity):
                 match_id = match.get("match_hash_id")
                 home_score = match.get("home_score")
                 away_score = match.get("away_score")
-                
+
                 # Determine result for this team
                 team_hash_id = attrs.get("team_hash_id")
                 if team_hash_id == match.get("home_team_hash_id"):
@@ -472,7 +472,7 @@ class DriblLadderSensor(DriblSensorEntity):
                         result = "?"
                 else:
                     result = "?"
-                
+
                 recent_form.append({
                     "result": result,
                     "link": f"{subdomain}/matchcentre?m={match_id}" if match_id else None,
@@ -482,7 +482,7 @@ class DriblLadderSensor(DriblSensorEntity):
                     "home_score": home_score,
                     "away_score": away_score,
                 })
-            
+
             # Format up next with link
             up_next = None
             upcoming_matches = attrs.get("upcoming_matches", [])
@@ -497,7 +497,7 @@ class DriblLadderSensor(DriblSensorEntity):
                     "opponent": next_match.get("away_club_name") if attrs.get("team_hash_id") == next_match.get("home_team_hash_id") else next_match.get("home_club_name"),
                     "home_away": "home" if attrs.get("team_hash_id") == next_match.get("home_team_hash_id") else "away",
                 }
-            
+
             formatted_ladder.append({
                 "position": attrs.get("position"),
                 "team_name": attrs.get("team_name"),
@@ -517,9 +517,9 @@ class DriblLadderSensor(DriblSensorEntity):
                 "recent_form": recent_form,
                 "up_next": up_next,
             })
-        
+
         return {
             "ladder": formatted_ladder,
             "team_count": len(formatted_ladder),
-            "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
+            "last_updated": self.coordinator.last_update_success.isoformat() if self.coordinator.last_update_success else None,
         }
