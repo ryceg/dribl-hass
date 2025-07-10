@@ -5,7 +5,8 @@
       "Bash(curl:*)",
       "Bash(grep:*)",
       "Bash(rg:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }

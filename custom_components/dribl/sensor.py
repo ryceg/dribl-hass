@@ -161,7 +161,7 @@ class DriblNextGameSensor(DriblSensorEntity):
             "google_maps_link": maps_link,
             "ground_address": attrs.get("ground_address"),
             "match_name": attrs.get("name"),
-            "last_updated": self.coordinator.last_update_success.isoformat() if self.coordinator.last_update_success else None,
+            "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
         }
 
 
@@ -374,7 +374,7 @@ class DriblPlayerSensor(DriblSensorEntity):
             "club_accent": attrs.get("club_accent"),
             "career_stats": career_stats,
             "lifetime_totals": lifetime_totals,
-            "last_updated": self.coordinator.last_update_success.isoformat() if self.coordinator.last_update_success else None,
+            "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
         }
 
 
@@ -521,5 +521,5 @@ class DriblLadderSensor(DriblSensorEntity):
         return {
             "ladder": formatted_ladder,
             "team_count": len(formatted_ladder),
-            "last_updated": self.coordinator.last_update_success.isoformat() if self.coordinator.last_update_success else None,
+            "last_updated": self.coordinator.last_update_success_time.isoformat() if self.coordinator.last_update_success_time else None,
         }
