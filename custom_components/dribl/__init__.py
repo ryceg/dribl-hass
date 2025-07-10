@@ -131,6 +131,7 @@ class DriblDataUpdateCoordinator(DataUpdateCoordinator):
         self.grounds = grounds
         self.players = players
         self.results_hours = results_hours
+        self.last_update_success_time = None
         
         super().__init__(
             hass,
@@ -244,6 +245,10 @@ class DriblDataUpdateCoordinator(DataUpdateCoordinator):
                 if ladder:
                     ladder_data[league_id] = ladder
             data["ladders"] = ladder_data
+            
+            # Update the last successful update time
+            from datetime import datetime
+            self.last_update_success_time = datetime.now()
             
             return data
             
